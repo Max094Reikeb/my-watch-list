@@ -102,6 +102,9 @@ def fetch_top_tv_shows(provider_id):
 
 
 def signup(request):
+    if request.user.is_authenticated:
+        return redirect("list")
+
     if request.method == "POST":
         form = UserCreationForm(request.POST)
         if form.is_valid():
