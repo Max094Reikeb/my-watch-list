@@ -1,0 +1,15 @@
+# Editor folders
+.idea/
+.vscode/
+
+# Unwanted files & folders
+*.DS_STORE
+.env
+.venv/
+**/__pycache__/**
+htmlcov/
+.coverage
+
+# Database files
+*.sqlite
+*.sqlite3
