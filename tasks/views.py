@@ -1,9 +1,13 @@
 import json
 import urllib.request
 
-from django.shortcuts import render, redirect
+from django.contrib.auth import login
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import UserCreationForm
+from django.shortcuts import render, redirect, get_object_or_404
 
-from .forms import *
+from .forms import TaskForm
+from .models import Task
 
 TMDB_API_KEY = "66bbbec74be84702eebab7c21a8e3830"
 
@@ -15,8 +19,9 @@ PROVIDERS = {
 
 
 # Create your views here.
+@login_required
 def index(request):
-    tasks = Task.objects.all()
+    tasks = Task.objects.filter(user=request.user)
     form = TaskForm()
     platform = request.GET.get("platform") or request.POST.get("platform")
 
@@ -31,12 +36,14 @@ def index(request):
                 title = show.get("name") or show.get("original_name")
                 if not title:
                     continue
-                Task.objects.get_or_create(title=title)
+                Task.objects.get_or_create(user=request.user, title=title)
 
             return redirect('/')
 
         form = TaskForm(request.POST)
         if form.is_valid():
+            task = form.save(commit=False)
+            task.user = request.user
             form.save()
         return redirect('/')
 
@@ -49,29 +56,31 @@ def index(request):
     return render(request, 'tasks/list.html', context)
 
 
+@login_required
 def updateTask(request, pk):
-    task = Task.objects.get(id=pk)
+    task = get_object_or_404(Task, id=pk, user=request.user)
     form = TaskForm(instance=task)
 
     if request.method == "POST":
         form = TaskForm(request.POST, instance=task)
         if form.is_valid():
             form.save()
-            return redirect('/')
+            return redirect("list")
 
-    context = {'form': form}
-    return render(request, 'tasks/update_task.html', context)
+    context = {"form": form}
+    return render(request, "tasks/update_task.html", context)
 
 
+@login_required
 def deleteTask(request, pk):
-    item = Task.objects.get(id=pk)
+    item = get_object_or_404(Task, id=pk, user=request.user)
 
     if request.method == "POST":
         item.delete()
-        return redirect('/')
+        return redirect("list")
 
-    context = {'item': item}
-    return render(request, 'tasks/delete.html', context)
+    context = {"item": item}
+    return render(request, "tasks/delete.html", context)
 
 
 def fetch_top_tv_shows(provider_id):
@@ -90,3 +99,19 @@ def fetch_top_tv_shows(provider_id):
 
     # TMDB always returns 20 → keep only 10
     return data.get("results", [])[:10]
+
+
+def signup(request):
+    if request.user.is_authenticated:
+        return redirect("list")
+
+    if request.method == "POST":
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return redirect("list")
+    else:
+        form = UserCreationForm()
+
+    return render(request, "registration/signup.html", {"form": form})
