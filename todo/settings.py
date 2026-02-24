@@ -84,7 +84,7 @@ DATABASES = {
         "NAME": os.getenv("POSTGRES_DB", "watchlist"),
         "USER": os.getenv("POSTGRES_USER", "watchlist"),
         "PASSWORD": os.getenv("POSTGRES_PASSWORD", "watchlistpwd"),
-        "HOST": os.getenv("POSTGRES_HOST", "db"),
+        "HOST": os.getenv("POSTGRES_HOST", "postgresql-service"),
         "PORT": os.getenv("POSTGRES_PORT", "5432"),
     }
 }

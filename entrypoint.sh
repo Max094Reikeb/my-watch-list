@@ -4,7 +4,7 @@ set -e
 echo "Waiting for Postgres..."
 python - <<'PY'
 import os, time, socket
-host=os.getenv("POSTGRES_HOST","db-postgress")
+host=os.getenv("POSTGRES_HOST","postgresql-service")
 port=int(os.getenv("POSTGRES_PORT","5432"))
 for _ in range(60):
     try:
