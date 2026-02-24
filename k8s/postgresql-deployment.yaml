@@ -26,7 +26,10 @@ spec:
               value: watchlist
             - name: POSTGRES_PASSWORD
               value: watchlistpwd
-            - name: POSTGRES_HOST
-              value: postgresql-service
-            - name: POSTGRES_PORT
-              value: "5432"
+          volumeMounts:
+            - name: postgresql-data
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: postgresql-data
+          persistentVolumeClaim:
+            claimName: postgresql-pvc
